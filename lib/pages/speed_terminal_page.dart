@@ -737,7 +737,7 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
                                     : isLast
                                     ? _TermColors.green
                                     : _TermColors.textPrimary,
-                                fontSize: 13,
+                                fontSize: 11,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -745,12 +745,17 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
                             Expanded(
                               child: Text(
                                 level.name,
-                                style: TextStyle(
+                                textAlign: TextAlign.right,
+                                overflow: TextOverflow.ellipsis,
+                                maxLines: 1,
+                                style: GoogleFonts.spaceMono(
                                   color: _TermColors.textPrimary,
-                                  fontSize: 13,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
                                 ),
                               ),
                             ),
+                            if (isFirst || isLast) const SizedBox(width: 6),
                             if (isFirst)
                               _badge('起點', _TermColors.accent)
                             else if (isLast)
@@ -1223,13 +1228,17 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
 
   Widget _infoPanel({required List<Widget> children}) {
     return Container(
+      width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: _TermColors.panel,
         borderRadius: BorderRadius.circular(8),
         border: Border.all(color: _TermColors.border),
       ),
-      child: Column(children: children),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: children,
+      ),
     );
   }
 
@@ -1237,18 +1246,18 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Flexible(
-            child: Text(
-              label,
-              style: GoogleFonts.spaceMono(
-                color: _TermColors.textDim,
-                fontSize: 11,
-              ),
+          Text(
+            label,
+            style: GoogleFonts.spaceMono(
+              color: _TermColors.textDim,
+              fontSize: 11,
             ),
           ),
-          const SizedBox(width: 8),
-          Expanded(
+          const SizedBox(width: 12),
+          const Spacer(),
+          Flexible(
             flex: 2,
             child: Text(
               value,

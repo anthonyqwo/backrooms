@@ -11,6 +11,9 @@ import 'noclip_page.dart';
 import 'level_map_page.dart';
 import 'glossary_page.dart';
 import 'speed_terminal_page.dart';
+import 'object_detail_page.dart';
+import 'inventory_page.dart';
+import '../widgets/object_card.dart';
 
 /// 後室 App 首頁
 class HomePage extends StatefulWidget {
@@ -23,6 +26,7 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   bool _levelsExpanded = true;
   bool _entitiesExpanded = true;
+  bool _objectsExpanded = true;
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +122,42 @@ class _HomePageState extends State<HomePage> {
                       duration: const Duration(milliseconds: 300),
                       sizeCurve: Curves.easeInOut,
                     ),
+                    const SizedBox(height: 32),
+                    // 生存物資（可收合）
+                    _CollapsibleHeader(
+                      title: '生存物資',
+                      subtitle: '已確認的後室常用物品',
+                      icon: Icons.inventory_2_outlined,
+                      count: BackroomsData.objects.length,
+                      expanded: _objectsExpanded,
+                      onToggle: () => setState(
+                        () => _objectsExpanded = !_objectsExpanded,
+                      ),
+                    ),
+                    AnimatedCrossFade(
+                      firstChild: Column(
+                        children: BackroomsData.objects
+                            .map(
+                              (object) => ObjectCard(
+                                object: object,
+                                onTap: () => Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) =>
+                                        ObjectDetailPage(object: object),
+                                  ),
+                                ),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      secondChild: const SizedBox.shrink(),
+                      crossFadeState: _objectsExpanded
+                          ? CrossFadeState.showFirst
+                          : CrossFadeState.showSecond,
+                      duration: const Duration(milliseconds: 300),
+                      sizeCurve: Curves.easeInOut,
+                    ),
                     const SizedBox(height: 40),
                   ],
                 ),
@@ -181,8 +221,16 @@ class _HeroBanner extends StatelessWidget {
               ),
             ),
             actions: [
-              Icon(Icons.menu_book_outlined, color: AppColors.primary),
-              const SizedBox(width: 16),
+              IconButton(
+                icon: const Icon(Icons.shopping_bag_outlined),
+                color: AppColors.primary,
+                tooltip: '生存包',
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InventoryPage()),
+                ),
+              ),
+              const SizedBox(width: 8),
             ],
           ),
         ),
@@ -326,7 +374,11 @@ class _QuickActions extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 10),
+          ],
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
             // 術語表
             Expanded(
               child: _ActionCard(
@@ -337,6 +389,20 @@ class _QuickActions extends StatelessWidget {
                 onTap: () => Navigator.push(
                   context,
                   MaterialPageRoute(builder: (_) => const GlossaryPage()),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            // 生存包
+            Expanded(
+              child: _ActionCard(
+                icon: Icons.shopping_bag_outlined,
+                label: '生存包',
+                sublabel: 'KIT',
+                color: AppColors.primary,
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const InventoryPage()),
                 ),
               ),
             ),

@@ -64,27 +64,54 @@ class Entity {
   });
 }
 
+class BackroomsObject {
+  final String id;
+  final String name;
+  final String nameEn;
+  final String objectClass; // 'Class 1' | 'Class 2' | 'Class 3'
+  final String description;
+  final String fullDescription;
+  final List<String> properties; // 特點 / 用途
+  final String dangerLevel; // 'safe' | 'caution' | 'danger'
+  final String imageUrl;
+
+  const BackroomsObject({
+    required this.id,
+    required this.name,
+    required this.nameEn,
+    required this.objectClass,
+    required this.description,
+    required this.fullDescription,
+    required this.properties,
+    required this.dangerLevel,
+    required this.imageUrl,
+  });
+}
+
 class BackroomsData {
   BackroomsData._();
 
   static const List<Level> levels = [
     Level(
       id: 0,
-      name: '教學關卡',
+      name: '閾界',
       nameEn: 'Level 0',
-      subtitle: 'The Lobby',
+      subtitle: 'The Lobby / Yellow Hell',
       classLabel: '等級 1',
-      classTags: '安全・穩定・無實體',
-      description: '近似零售店儲藏後室的非線性空間，泛黃壁紙、潮濕地毯與不規律閃爍的螢光燈是其統一特徵。',
+      classTags: '安全・穩定・未確認實體',
+      description: '被稱為「黃色地獄」，由無盡重複的辦公空間構成。泛黃壁紙、霉斑地毯與螢光燈嗡鳴是其特徵，這裡是流浪者進入後室的第一站。',
       fullDescription:
-          'Level 0 是後室的第一層，也是許多人所遭遇的第一層。此空間由無限延伸的房間組成，所有房間在外觀上呈現具有共同表面特徵的統一制式樣貌：泛黃的壁紙、潮濕的地毯，以及以不一致方式安裝的螢光燈具。然而，本層中不存在兩個完全相同的房間。\n\n被安裝在本層空間中的螢光燈保持無規律閃爍，並以恆定頻率發出嗡鳴。這種噪聲尤其響亮，明顯比正常的螢光燈所能製造的噪音更加刺耳。浸濕地毯的物質成分始終無法被查明，既不是水，也不能被安全地飲用。\n\n在 Level 0 中，線性空間發生了相當大的變化；以至於可能順著直線行走卻返回起點，而沿著足跡折返將會導致一組新的、不同的房間替代已經通過的房間出現。由於此點，以及各房間之間的視覺相似性，試圖在後室中進行穩定的導航十分困難。指南針和 GPS 定位器等設備無法在本層中正常運行，無線電通訊則會變得失真且不可靠。\n\nLevel 0 是完全靜止且不存在生命的。儘管它是後室的主要入口，卻從未有人員報告在本層內與其他流浪者發生接觸。據推測，絕大多數人員在離開本層前就已死亡，主要死因可能包括：脫水、飢餓、感官剝奪和孤獨造成的心理創傷。',
+          'Level 0 是後室的第一層，往往也是誤入者們的第一站。這是一個由無限延伸的隔間、走廊與樓梯組成的非線性空間。其共同特徵包括：病態泛黃的壁紙、覆滿霉斑的潮濕地毯，以及不斷閃爍且發出震耳欲聾嗡鳴聲的螢光燈具。\n\n本層級存在多種空間異變（變體）：\n1. **拱門 (Arches)**：穩定性最佳，適合辨認方向。\n2. **柱廳 (Pillars)**：巨大的立柱房間，會發生「邊緣位移」使來路難以辨認。\n3. **深坑 (Deep Pits)**：直通地底深處，墜落後果不明。\n4. **熄燈區 (Blackout Zones)**：完全無照明的區域，充斥著沒過腳踝的積液。\n5. **紅室 (Red Rooms)**：極度危險且幾乎無法逃離，牆紙會剝落暴露出下方的血紅色，請務必徹底遠離。\n\n「孤立效應」是本層最顯著的現象：即使兩名流浪者並肩進入，也永遠無法找到彼此，這是一道必須孤身面對的難關。地毯中的液體成分駁雜，包含鹽水、杏仁水、液態痛苦、甚至福爾馬林及人類 DNA，強烈建議不要啃食或飲用。',
       dangerLevel: 'class1',
-      entities: ['本層已知無任何實體'],
+      entities: ['尚不可知，可能受孤立效應影響，有報告稱見到黑色人影尾隨'],
       accessMethods: [
-        '因意外「切出」（No-clipping）現實的界限而進入，是最常見的方式',
+        '從現實世界中意外「切出」（No-clipping）',
         '在 Level 283 的堡壘中，極其少見地存在散發霉味的木門通向 Level 0',
       ],
-      exitMethods: ['「切出」（Noclipping）本層，通常會進入 Level 1', '前往馬尼拉房間（僅供聚集，無法離開本層）'],
+      exitMethods: [
+        '存活足夠久，直到發現閃爍的牆壁並縱身投入其中，將抵達 Level 1',
+        '找到極其罕見的「馬尼拉房間（Manila Room）」',
+      ],
       imageUrl: 'assets/images/level_0.jpg',
       sizeDesc: '約六億平方英里（估計）',
     ),
@@ -424,6 +451,90 @@ class BackroomsData {
         '相信直覺——若感覺不對勁立刻離開',
       ],
       imageUrl: 'assets/images/entity_skin_stealer.jpg',
+    ),
+  ];
+
+  static const List<BackroomsObject> objects = [
+    BackroomsObject(
+      id: 'almond-water',
+      name: '杏仁水',
+      nameEn: 'Almond Water',
+      objectClass: 'Class 1 (安全)',
+      description: '後室中最常見且最重要的生存物資，帶有淡淡杏仁味的透明液體。',
+      fullDescription:
+          '杏仁水是後室中最重要的生存物資。它是一種透明液體，聞起來有淡淡的苦杏仁味。這種液體不僅可以維持流浪者的水分，還能提供一定的能量（每瓶約 600 卡路里）。\n\n除了食用價值，杏仁水還具有顯著的醫療與心理效應：它能加速傷口癒合，緩解流浪者的精神壓力。最重要的是，飲用適量的杏仁水可以中和某些實體造成的負面變異（如「爬菌」感染），防止流浪者喪失人性轉化為實體。',
+      properties: [
+        '維持水分與高熱量補給',
+        '加速外傷癒合',
+        '緩解精神壓力，防止實體化',
+        '在特定層級可能有毒，建議過濾或煮沸',
+      ],
+      dangerLevel: 'safe',
+      imageUrl: 'assets/images/object_almond_water.jpg',
+    ),
+    BackroomsObject(
+      id: 'firesalt',
+      name: '火鹽',
+      nameEn: 'Firesalt',
+      objectClass: 'Class 1 (實用)',
+      description: '具有爆炸性的橙色小型晶體，是流浪者的自衛武器與主要熱源。',
+      fullDescription:
+          '火鹽是一種不穩定的橙色晶體。它在受到強力撞擊（如投擲）時會發生劇烈爆炸，釋放出強烈的火花與熱量。這使得它成為流浪者對抗實體的有效自衛武器。\n\n在非戰鬥場合，火鹽也極具價值。將一小粒火鹽溶於水中，會立即將水加熱至沸騰點，可用於烹飪或液體消毒。熔化後的液態火鹽甚至可以用作工業設備的燃料。',
+      properties: [
+        '投擲可觸發爆炸，威懾實體',
+        '溶解於水可快速產生熱能與沸水',
+        '可用作發電機或載具的替代燃料',
+      ],
+      dangerLevel: 'caution',
+      imageUrl: 'assets/images/object_firesalt.png',
+    ),
+    BackroomsObject(
+      id: 'liquid-pain',
+      name: '液態痛苦',
+      nameEn: 'Liquid Pain',
+      objectClass: 'Class 3 (極度危險)',
+      description: '一種深紅色的粘性有毒液體，外觀常被誤認為是有用的飲料。',
+      fullDescription:
+          '液態痛苦是後室中最陰險的陷阱之一。它呈現為深紅色的濃稠液體，外觀酷似強效補給品，但實際上含有致命毒素。接觸或飲用後，受害者會感受到全身如火燒、骨裂般的極度痛苦。\n\n這種液體會導致內臟衰竭與嚴重的溶血反應。它的獨特之處在於散發著淡淡的腐爛肉味，這通常是辨識它的唯一方式。它經常出現在層級陰暗處，或被隱藏在看似無害的求生物資包中。',
+      properties: [
+        '引發極度劇烈的全身痛覺',
+        '導致多重器官衰竭與溶血',
+        '具有誘騙性的外觀，帶有腐肉味',
+      ],
+      dangerLevel: 'danger',
+      imageUrl: 'assets/images/object_liquid_pain.jpg',
+    ),
+    BackroomsObject(
+      id: 'memory-jar',
+      name: '記憶罐',
+      nameEn: 'Memory Jar',
+      objectClass: 'Class 2 (特殊)',
+      description: '能承載並重現死者記憶的玻璃罐，是後室中極具價值的交易品。',
+      fullDescription:
+          '記憶罐是一種奇特的玻璃容器。當持有者在攜帶罐子的情況下死亡時，罐子會自動捕捉並儲存受害者生前最後一段時間的記憶。罐子內部會出現漂浮的微光球。\n\n其他流浪者觸碰光球後，可以親身體驗並觀看這些記憶片段。這對於獲取層級路徑、避開已知陷阱或追尋失蹤者具有不可估量的價值。在主要貿易基地（如 M.E.G. 據點），記憶罐被視為最重要的資源與交易貨幣。',
+      properties: [
+        '自動保存死者的最後記憶片段',
+        '提供關鍵的層級情報與生存知識',
+        '高品質的交易媒介與物資',
+      ],
+      dangerLevel: 'safe',
+      imageUrl: 'assets/images/object_memory_jar.jpg',
+    ),
+    BackroomsObject(
+      id: 'royal-rations',
+      name: '皇家口糧',
+      nameEn: 'Royal Rations',
+      objectClass: 'Class 1 (珍貴)',
+      description: '白色半透明的明膠食物，提供驚人營養，但具有成癮性的美味。',
+      fullDescription:
+          '皇家口糧是後室中最高級的補給物資。它呈現為白色、半透明的凝膠狀，每一口都能為流浪者提供巨大的熱量與完整的生理營養需求。只需少量攝取即可支撐多日的體力活動。\n\n然而，它最著名的特徵是其無與倫比的回甘與美味——許多流浪者將其譽為「一生中吃過最好吃的東西」。這種味覺享受極具成癮性，過量食用會引發強烈的渴望與心理依賴，甚至導致流浪者群體內部為了爭奪殘餘口糧而爆發衝突。',
+      properties: [
+        '極高密度的能量與全面營養',
+        '極致的美味，具有強烈成癮性',
+        '在生存者群體中具高度戰略價值',
+      ],
+      dangerLevel: 'safe',
+      imageUrl: 'assets/images/object_royal_rations.jpg',
     ),
   ];
 }

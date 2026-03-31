@@ -2,40 +2,32 @@
 
 > 🕳️ 倖存者資料庫 · SURVIVOR DATABASE
 
-基於 [Backrooms 中文維基](https://backrooms-wiki-cn.wikidot.com/) 的 Flutter 內容型應用，提供後室層級百科、實體圖鑑，以及沉浸式深色主題 UI。
+一個基於 [Backrooms 中文維基](https://backrooms-wiki-cn.wikidot.com/) 的 Flutter 應用，為探索者提供後室層級百科、實體圖鑑、核心術語，以及整合了空間收刮互動的「速切終端」系統。
 
 ---
 
 ## ✨ 功能特色
 
-### 📚 層級百科
-- 收錄 **Level 0 – Level 12** 共 13 個層級的詳細資料
-- 包含生存難度、環境描述、進入/逃離方式、已知實體等完整資訊
-- 所有層級圖片均從 [Backrooms Wiki](https://backrooms-wiki-cn.wikidot.com/) 下載至本地
+### 📚 精確層級百科
+- **同步最新資料**：收錄 **Level 0 – Level 12** 的詳盡資訊，Level 0 已根據維基最新版本更新，包含拱門、柱廳、深坑等空間變體描述。
+- **生存分級系統**：標註各層級的生存難度（等級 1–5）、環境特徵、進入與離開路徑及已知實體。
 
-### 👁️ 實體圖鑑
-- 收錄 5 種主要實體：**笑魘 (Smiler)**、**無面靈 (Faceling)**、**肢團 (Clump)**、**獵犬 (Hound)**、**竊皮者 (Skin-Stealer)**
-- 每種實體含完整描述、出沒層級、倖存者守則
-- 實體使用專屬危險程度標籤（安全 / 注意 / 危險 / 極度危險）
+### ⚡ 速切終端 (Speed Terminal)
+- **多功能儀表板**：模擬 CLI 介面，提供定位追蹤、導航規劃與速切計時器。
+- **互動空間收刮 (Scavenge)**：整合終端日誌輸出的互動模式，模擬在不同層級間探索物資。
+- **響應式配置**：終端介面經過全面優化，支援各種螢幕比例而不發生版面溢出（Overflow）。
 
-### 🔗 智慧互連導航
-- 文內自動識別「Level X」字串，轉換為可點擊的層級連結
-- 點擊連結直接跳轉至對應層級詳情頁
-- 導航堆疊優化：所有詳情頁右上角提供「🏡 首頁」快捷按鈕，一鍵回首頁
+### 🎒 生存包物資管理 (Inventory System)
+- **即時物資狀態**：檢視目前收集到的物資，包含杏仁水、火鹽、液態痛苦、皇家口糧等核心資源。
+- **全域連動**：在首頁與速切終端中均可隨時開啟生存包，收刮到的物資會自動存入包內。
 
-### 🔍 圖片全螢幕檢視
-- 詳情頁 Hero 圖片支援**點擊放大**
-- 全螢幕檢視器支援：
-  - 雙指縮放（0.5x – 5x）
-  - 雙擊快速放大 / 還原
-  - Hero 動畫過渡
-  - 操作提示與關閉按鈕
+### 📖 彩色分類術語表 (Glossary)
+- **視覺化索引**：收錄核心概念、現象、物品、組織、地點與實體術語。
+- **色彩標籤系統**：使用專屬顏色區分術語類別（如：概念-藍、現象-紫、物品-綠...），提升閱讀效率。
 
-### 🎨 沉浸式設計
-- 深色主題，使用暖色調色盤（金棕色系）
-- Creepster 恐怖風格標題字體
-- Space Mono 等寬字體用於分類標籤
-- 漸層遮罩、卡片式佈局、微動畫效果
+### 🎨 沉浸式視覺設計
+- **深色美學**：以金棕色與暗炭色為主調，營造壓抑而神祕的後室氛圍。
+- **流暢動畫**：包含全螢幕圖片 Hero 過渡、終端開機動畫與掃描特效。
 
 ---
 
@@ -44,106 +36,66 @@
 ```
 lib/
 ├── core/
-│   └── app_colors.dart           # 全域色彩定義
+│   ├── app_colors.dart           # 全域色彩與主題定義
+│   └── inventory_manager.dart    # 物資管理單例狀態
 ├── data/
-│   └── backrooms_data.dart       # 層級 & 實體靜態資料
+│   ├── backrooms_data.dart       # 層級、實體與物資的核心資料
+│   └── glossary_data.dart        # 術語百科資料
 ├── pages/
-│   ├── home_page.dart            # 首頁（Hero 橫幅 + 列表）
-│   ├── level_detail_page.dart    # 層級詳情頁
-│   └── entity_detail_page.dart   # 實體詳情頁
+│   ├── home_page.dart            # 首頁（概覽與主要入口）
+│   ├── speed_terminal_page.dart  # 速切終端（互動功能核心）
+│   ├── inventory_page.dart       # 生存包詳情
+│   └── ...                       # 其他詳情頁與導航頁
 ├── widgets/
-│   ├── level_card.dart           # 層級卡片元件
-│   ├── entity_card.dart          # 實體卡片元件
-│   ├── danger_badge.dart         # 危險等級徽章（支援層級/實體雙模式）
-│   ├── section_header.dart       # 區塊標題
-│   ├── info_item.dart            # 資訊條目
-│   ├── level_link_text.dart      # 自動連結文字元件
-│   └── fullscreen_image_viewer.dart  # 全螢幕圖片檢視器
-├── main.dart                     # App 進入點
-assets/
-└── images/
-    ├── hero.png                  # 首頁橫幅圖
-    ├── level_0.jpg ~ level_12.*  # 各層級代表圖片
-    └── entity_*.jpg/png          # 各實體圖片
+│   ├── ...                       # 各式可重複使用的 UI 元件
+└── main.dart                     # 應用程式進入點
 ```
-
----
-
-## 📊 資料庫狀態
-
-| 類別 | 數量 | 範圍 |
-|------|------|------|
-| 層級 | 13 | Level 0 – Level 12 |
-| 實體 | 5 | 笑魘、無面靈、肢團、獵犬、竊皮者 |
-| 本地圖片 | 19 | 含所有層級 + 實體代表圖 |
 
 ---
 
 ## 🚀 快速開始
 
-### 環境需求
+### 開發需求
 - Flutter SDK `^3.41.4`
 - Dart SDK `^3.11.1`
 
 ### 執行方式
 
 ```bash
-# 安裝依賴
+# 取得專案依賴
 flutter pub get
 
-# 開發模式執行（macOS）
-flutter run -d macos
-
-# 編譯正式版
-flutter build macos
+# 啟動開發模式
+flutter run
 ```
 
 ---
 
-## 🛠️ 技術棧
+## 🛠️ 開發環境與套件
 
-| 技術 | 用途 |
+| 套件 | 途徑 |
 |------|------|
-| Flutter | 跨平台 UI 框架 |
-| Dart | 程式語言 |
-| google_fonts | 字體管理（Creepster、Space Mono、Noto Sans） |
-| Image.asset | 本地圖片載入 |
+| **Flutter** | 核心 UI 框架 |
+| **google_fonts** | 字體管理（搭配 Creepster 與 Space Mono） |
+| **ValueNotifier** | 輕量化狀態管理（物資系統） |
+| **InteractiveViewer** | 圖片縮放與手勢操作 |
 
 ---
 
-## 📋 開發日誌
+## 📋 開發里程碑
 
-### v1.0 — 基礎建設
-- ✅ 建立深色主題設計系統
-- ✅ 實作首頁 Hero 橫幅 + 警告橫幅
-- ✅ 層級卡片與實體卡片 UI
-- ✅ 層級詳情頁與實體詳情頁
-- ✅ 危險等級徽章元件
-
-### v1.1 — 圖片本地化
-- ✅ 從 Backrooms Wiki CN 下載所有圖片至本地
-- ✅ 全面替換 `Image.network` → `Image.asset`
-
-### v1.2 — 導航增強
-- ✅ `LevelLinkText` 自動辨識文內層級連結
-- ✅ 各詳情頁新增「首頁」快捷按鈕
-
-### v1.3 — 內容擴展
-- ✅ 層級資料從 Level 0-5 擴展至 **Level 0-12**
-- ✅ 從維基下載 Level 6-12 代表圖片
-
-### v1.4 — 體驗優化
-- ✅ 全螢幕圖片檢視器（縮放、雙擊、Hero 動畫）
-- ✅ 修正實體誤用層級標籤的問題（安全/注意/危險/極度危險）
-
-### 🔮 Planned — 文字冒險模式
-- ⬜ AI 驅動的第一人稱文字冒險
-- ⬜ 搭配 LLM API 即時生成故事內容
-- ⬜ 融入已有的層級與實體資料作為世界觀
+### 已實作功能
+- ✅ **層級與實體百科**：完成 Level 0-12 資料同步與詳細圖鑑。
+- ✅ **速切終端系統**：整合定位、導航、計時與空間收刮功能。
+- ✅ **物資隨機收刮**：實作終端互動式掃描與物資掉落邏輯。
+- ✅ **生存包管理**：完成跨頁面即時更新的物資管理與 UI 列表。
+- ✅ **術語分類優化**：完成術語表的分色標籤標註。
+- ✅ **穩定性修復**：修正各種螢幕尺寸下的 RenderFlex 溢出問題與語法錯誤。
 
 ---
 
-## 📄 授權
+## 📄 授權與說明
 
-- 內容來源：[Backrooms 中文維基](https://backrooms-wiki-cn.wikidot.com/)
-- 圖片授權：[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+- **內容來源**：[Backrooms 中文維基](https://backrooms-wiki-cn.wikidot.com/)
+- **圖片授權**：[CC BY-SA 3.0](https://creativecommons.org/licenses/by-sa/3.0/)
+- 本應用程式僅供研究與愛好者學術交流使用。

@@ -5,6 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../data/backrooms_data.dart';
 import '../pages/level_detail_page.dart';
+import '../pages/inventory_page.dart';
+import '../core/inventory_manager.dart';
 
 /// 速切終端配色
 class _TermColors {
@@ -49,6 +51,15 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
   int _bootLine = 0;
   Timer? _bootTimer;
 
+  // 收刮功能狀態
+  bool _isScavenging = false;
+  double _scavengeProgress = 0.0;
+  final List<String> _scavengeLogs = [];
+  BackroomsObject? _lastScavengeResult;
+  late AnimationController _scavengeController;
+  late Animation<double> _scavengeAnim;
+  final ScrollController _scavengeScrollController = ScrollController();
+
   final _bootLines = [
     'SPEED_NOCLIP_TERMINAL v3.7.2',
     '正在連線至速切玩家中央伺服器...',
@@ -69,6 +80,17 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
       duration: const Duration(milliseconds: 500),
     );
     _bootAnim = CurvedAnimation(parent: _bootController, curve: Curves.easeOut);
+
+    _scavengeController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    );
+    _scavengeAnim =
+        CurvedAnimation(parent: _scavengeController, curve: Curves.linear);
+
+    _scavengeController.addListener(() {
+      setState(() => _scavengeProgress = _scavengeController.value);
+    });
 
     // 開機序列
     _bootTimer = Timer.periodic(const Duration(milliseconds: 350), (timer) {
@@ -91,6 +113,8 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
     _bootTimer?.cancel();
     _timer?.cancel();
     _bootController.dispose();
+    _scavengeController.dispose();
+    _scavengeScrollController.dispose();
     super.dispose();
   }
 
@@ -165,6 +189,73 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
 
     // 找不到路時直接返回起終點
     return [from, to];
+  }
+
+  // === 收刮邏輯 ===
+  void _addScavengeLog(String text) {
+    if (mounted) {
+      setState(() {
+        _scavengeLogs.add('[${DateTime.now().toString().split(' ').last.substring(0, 8)}] $text');
+      });
+      // 自動捲動到底部
+      Future.delayed(const Duration(milliseconds: 50), () {
+        if (_scavengeScrollController.hasClients) {
+          _scavengeScrollController.animateTo(
+            _scavengeScrollController.position.maxScrollExtent,
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+          );
+        }
+      });
+    }
+  }
+
+  Future<void> _performScavenge() async {
+    if (_isScavenging) return;
+
+    setState(() {
+      _isScavenging = true;
+      _scavengeProgress = 0.0;
+      _scavengeLogs.clear();
+      _lastScavengeResult = null;
+    });
+
+    _addScavengeLog('初始化空間頻譜掃描器...');
+    await Future.delayed(const Duration(milliseconds: 600));
+    _addScavengeLog('正在偵測局部空間不穩定性...');
+    
+    // 開始計時 4 秒的探測動畫
+    final scanFuture = _scavengeController.forward();
+
+    // 在掃描期間非同步插入日誌（總計約耗時 3.5 秒）
+    await Future.delayed(const Duration(milliseconds: 800));
+    _addScavengeLog('掃描到異常微粒排列方式: ${_currentLevel?.name ?? "未知層級"}');
+    await Future.delayed(const Duration(milliseconds: 1000));
+    _addScavengeLog('正在解析高能反應信號源...');
+    await Future.delayed(const Duration(milliseconds: 1000));
+    _addScavengeLog('嘗試提取空間物資快照...');
+
+    // 確保動畫完全結束
+    await scanFuture;
+
+    if (mounted) {
+      setState(() {
+        _isScavenging = false;
+        _scavengeController.reset();
+
+        // 隨機結果：70% 成功，30% 失敗
+        if (_random.nextDouble() > 0.3) {
+          final objects = BackroomsData.objects;
+          _lastScavengeResult = objects[_random.nextInt(objects.length)];
+          _addScavengeLog('>>> 掃描成功：尋獲物資 【${_lastScavengeResult!.name}】');
+          _addScavengeLog('正在將物資數據化並傳輸至生存包...');
+          InventoryManager.instance.addItem(_lastScavengeResult!.id);
+        } else {
+          _addScavengeLog('>>> 掃描結束：未偵測到有價值的物資。');
+          _addScavengeLog('警告：該區域資源可能已枯竭。');
+        }
+      });
+    }
   }
 
   @override
@@ -253,6 +344,7 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
                 _buildNavigateTab(),
                 _buildTimerTab(),
                 _buildDatabaseTab(),
+                _buildScavengeTab(),
               ],
             ),
           ),
@@ -287,6 +379,8 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
               children: [
                 Text(
                   '速切終端 C-49',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                   style: GoogleFonts.spaceMono(
                     color: _TermColors.textPrimary,
                     fontSize: 14,
@@ -295,7 +389,9 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
                   ),
                 ),
                 Text(
-                  'SPEED NOCLIP TERMINAL · 訪客模式',
+                  'SPEED NOCLIP TERMINAL',
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                   style: GoogleFonts.spaceMono(
                     color: _TermColors.textDim,
                     fontSize: 8,
@@ -305,7 +401,7 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
               ],
             ),
           ),
-          // 連線狀態
+          const SizedBox(width: 4),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
@@ -338,6 +434,27 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
               ],
             ),
           ),
+          const SizedBox(width: 8),
+          // 生存包入口
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => const InventoryPage()),
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(6),
+              decoration: BoxDecoration(
+                color: _TermColors.accent.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: _TermColors.accent.withValues(alpha: 0.4)),
+              ),
+              child: Icon(
+                Icons.shopping_bag_outlined,
+                color: _TermColors.accent,
+                size: 16,
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -349,60 +466,71 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
       ('導航', Icons.route),
       ('計時', Icons.timer_outlined),
       ('資料庫', Icons.storage),
+      ('收刮', Icons.search),
     ];
 
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      width: double.infinity,
       decoration: BoxDecoration(
         color: _TermColors.bg,
         border: Border(bottom: BorderSide(color: _TermColors.border, width: 1)),
       ),
-      child: Row(
-        children: List.generate(tabs.length, (i) {
-          final selected = _currentTab == i;
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => setState(() => _currentTab = i),
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 8),
-                margin: const EdgeInsets.symmetric(horizontal: 3),
-                decoration: BoxDecoration(
-                  color: selected
-                      ? _TermColors.accent.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(6),
-                  border: Border.all(
-                    color: selected ? _TermColors.accent : Colors.transparent,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Icon(
-                      tabs[i].$2,
-                      size: 18,
-                      color: selected
-                          ? _TermColors.accent
-                          : _TermColors.textDim,
-                    ),
-                    const SizedBox(height: 2),
-                    Text(
-                      tabs[i].$1,
-                      style: TextStyle(
-                        color: selected
-                            ? _TermColors.accent
-                            : _TermColors.textDim,
-                        fontSize: 10,
-                        fontWeight: selected
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          return SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            physics: const BouncingScrollPhysics(),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minWidth: constraints.maxWidth),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: tabs.asMap().entries.map((entry) {
+                    final i = entry.key;
+                    final label = entry.value.$1;
+                    final icon = entry.value.$2;
+                    final selected = _currentTab == i;
+
+                    return GestureDetector(
+                      onTap: () => setState(() => _currentTab = i),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? _TermColors.accent.withValues(alpha: 0.1)
+                              : Colors.transparent,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              icon,
+                              size: 18,
+                              color: selected ? _TermColors.accent : _TermColors.textDim,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              label,
+                              style: GoogleFonts.spaceMono(
+                                color: selected ? _TermColors.accent : _TermColors.textDim,
+                                fontSize: 10,
+                                fontWeight:
+                                    selected ? FontWeight.bold : FontWeight.normal,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    );
+                  }).toList(),
                 ),
               ),
             ),
           );
-        }),
+        },
       ),
     );
   }
@@ -466,14 +594,16 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
                         size: 14,
                       ),
                       const SizedBox(width: 8),
-                      Text(
-                        e,
-                        style: GoogleFonts.spaceMono(
-                          color: _TermColors.red,
-                          fontSize: 12,
+                      Expanded(
+                        child: Text(
+                          e,
+                          style: GoogleFonts.spaceMono(
+                            color: _TermColors.red,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
-                      const Spacer(),
+                      const SizedBox(width: 12),
                       Text(
                         '距離 ${_random.nextInt(500) + 50}m',
                         style: GoogleFonts.spaceMono(
@@ -877,6 +1007,161 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
     );
   }
 
+  // === Tab 5: 收刮 ===
+  Widget _buildScavengeTab() {
+    return Padding(
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _sectionTitle('空間物資探測'),
+          const SizedBox(height: 16),
+          // 掃描狀態顯示
+          Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: _TermColors.panel,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: _isScavenging ? _TermColors.accent : _TermColors.border,
+              ),
+            ),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _isScavenging ? '正在探測中...' : '系統就緒',
+                      style: GoogleFonts.spaceMono(
+                        color: _isScavenging ? _TermColors.accent : _TermColors.textDim,
+                        fontSize: 12,
+                      ),
+                    ),
+                    Text(
+                      '${(_scavengeProgress * 100).toInt()}%',
+                      style: GoogleFonts.spaceMono(
+                        color: _TermColors.accent,
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // 進度條
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(4),
+                  child: LinearProgressIndicator(
+                    value: _scavengeProgress,
+                    backgroundColor: _TermColors.bg,
+                    valueColor: const AlwaysStoppedAnimation(_TermColors.accent),
+                    minHeight: 8,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 收刮結果（獲取物品時顯示）
+          if (_lastScavengeResult != null)
+            Container(
+              margin: const EdgeInsets.only(bottom: 16),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: _TermColors.green.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: _TermColors.green.withValues(alpha: 0.5)),
+              ),
+              child: Row(
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(4),
+                    child: Image.asset(
+                      _lastScavengeResult!.imageUrl,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          '獲取物資：${_lastScavengeResult!.name}',
+                          style: const TextStyle(
+                            color: _TermColors.green,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                          ),
+                        ),
+                        Text(
+                          '已自動存入生存包',
+                          style: TextStyle(color: _TermColors.textDim, fontSize: 10),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          // 終端日誌區
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.symmetric(vertical: 0),
+              padding: const EdgeInsets.all(12),
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: Colors.black.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: _TermColors.border),
+              ),
+              child: _scavengeLogs.isEmpty
+                  ? Center(
+                      child: Text(
+                        '等待探測指令...',
+                        style: GoogleFonts.spaceMono(
+                          color: _TermColors.textDim,
+                          fontSize: 12,
+                        ),
+                      ),
+                    )
+                  : ListView.builder(
+                      controller: _scavengeScrollController,
+                      itemCount: _scavengeLogs.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 4),
+                          child: Text(
+                            _scavengeLogs[index],
+                            style: GoogleFonts.spaceMono(
+                              color: _TermColors.textDim,
+                              fontSize: 10,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          // 按鈕
+          SizedBox(
+            width: double.infinity,
+            child: _termButton(
+              label: _isScavenging ? '掃描中...' : '開始空間收刮',
+              icon: _isScavenging ? Icons.radar : Icons.search,
+              color: _isScavenging ? _TermColors.textDim : _TermColors.accent,
+              onTap: _isScavenging ? () {} : _performScavenge,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   // === 工具元件 ===
   Widget _buildLevelSelector({
     required String label,
@@ -952,21 +1237,27 @@ class _SpeedTerminalPageState extends State<SpeedTerminalPage>
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            label,
-            style: GoogleFonts.spaceMono(
-              color: _TermColors.textDim,
-              fontSize: 11,
+          Flexible(
+            child: Text(
+              label,
+              style: GoogleFonts.spaceMono(
+                color: _TermColors.textDim,
+                fontSize: 11,
+              ),
             ),
           ),
-          Text(
-            value,
-            style: GoogleFonts.spaceMono(
-              color: valueColor ?? _TermColors.textPrimary,
-              fontSize: 11,
-              fontWeight: FontWeight.bold,
+          const SizedBox(width: 8),
+          Expanded(
+            flex: 2,
+            child: Text(
+              value,
+              textAlign: TextAlign.right,
+              style: GoogleFonts.spaceMono(
+                color: valueColor ?? _TermColors.textPrimary,
+                fontSize: 11,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

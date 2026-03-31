@@ -7,6 +7,7 @@ import '../widgets/fullscreen_image_viewer.dart';
 import '../widgets/section_header.dart';
 import '../widgets/info_item.dart';
 import '../widgets/level_link_text.dart';
+import 'entity_detail_page.dart';
 
 /// Level 詳情頁面
 class LevelDetailPage extends StatelessWidget {
@@ -345,40 +346,74 @@ class _TagList extends StatelessWidget {
 
   const _TagList({required this.items, required this.color});
 
+  Entity? _findEntity(String item) {
+    // 優先匹配繁體中文名稱
+    for (final entity in BackroomsData.entities) {
+      if (item.contains(entity.name)) return entity;
+    }
+    return null;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Wrap(
       spacing: 8,
       runSpacing: 8,
-      children: items
-          .map(
-            (item) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: color.withValues(alpha: 0.5),
-                  width: 1,
-                ),
+      children: items.map((item) {
+        final entity = _findEntity(item);
+
+        return GestureDetector(
+          onTap: entity == null
+              ? null
+              : () => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => EntityDetailPage(entity: entity),
+                    ),
+                  ),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.15),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: entity != null
+                    ? color.withValues(alpha: 0.8) // 高亮可點擊的實體
+                    : color.withValues(alpha: 0.5),
+                width: entity != null ? 1.5 : 1,
               ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.remove_red_eye_outlined, color: color, size: 12),
-                  const SizedBox(width: 4),
-                  Text(
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  entity != null
+                      ? Icons.info_outline
+                      : Icons.remove_red_eye_outlined,
+                  color: color,
+                  size: 12,
+                ),
+                const SizedBox(width: 4),
+                Flexible(
+                  child: Text(
                     item,
                     style: TextStyle(
                       color: AppColors.textSecondary,
                       fontSize: 12,
+                      fontWeight:
+                          entity != null ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
+                ),
+                if (entity != null) ...[
+                  const SizedBox(width: 2),
+                  Icon(Icons.arrow_forward_ios, color: color, size: 8),
                 ],
-              ),
+              ],
             ),
-          )
-          .toList(),
+          ),
+        );
+      }).toList(),
     );
   }
 }

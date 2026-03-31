@@ -27,6 +27,15 @@ class _GlossaryPageState extends State<GlossaryPage> {
     '地點': Icons.place_outlined,
     '實體': Icons.visibility_off_outlined,
   };
+  
+  static const _categoryColors = {
+    '概念': Color(0xFF4FC3F7), // 淺藍
+    '現象': Color(0xFFBA68C8), // 淺紫
+    '物品': Color(0xFF81C784), // 淺綠
+    '組織': Color(0xFFFFB74D), // 琥珀
+    '地點': Color(0xFF4DB6AC), // 青綠
+    '實體': Color(0xFFE57373), // 珊瑚紅
+  };
 
   List<GlossaryEntry> get _filteredEntries {
     return GlossaryData.entries.where((entry) {
@@ -308,14 +317,19 @@ class _GlossaryCardState extends State<_GlossaryCard> {
                     ),
                     margin: const EdgeInsets.only(right: 8),
                     decoration: BoxDecoration(
-                      color: AppColors.primaryDark.withValues(alpha: 0.3),
+                      color: (_GlossaryPageState._categoryColors[entry.category] ?? AppColors.primary).withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(4),
+                      border: Border.all(
+                        color: (_GlossaryPageState._categoryColors[entry.category] ?? AppColors.primary).withValues(alpha: 0.5),
+                        width: 0.5,
+                      ),
                     ),
                     child: Text(
                       entry.category!,
                       style: GoogleFonts.spaceMono(
-                        color: AppColors.primary,
+                        color: _GlossaryPageState._categoryColors[entry.category] ?? AppColors.primary,
                         fontSize: 9,
+                        fontWeight: FontWeight.bold,
                         letterSpacing: 0.5,
                       ),
                     ),
